@@ -2,6 +2,8 @@
 
 """gitchangelog: Generate a change log based on closed pull requests."""
 
+__version__ = '1.01'
+
 import six
 from six.moves import input
 import sys
@@ -37,7 +39,7 @@ class GithubChangelog(object):
         if not args.init:
             if not args.repo:
                 die("The repository name (--repo) is required to continue.")
-            if not args.start:
+            if not args.start and not args.after:
                 die("The issue start number (--start) is required to continue.")
         else:
             sys.exit(0)
@@ -45,7 +47,11 @@ class GithubChangelog(object):
         self.repo = args.repo
 
         # Scan the pull requests.
-        changes = self.scan_pulls(start=args.start, stop=args.stop)
+        changes = self.scan_pulls(
+            start=args.start,
+            stop=args.stop,
+            after=args.after,
+        )
 
         # Pretty print the result!
         six.print_("\nChanges:\n")
@@ -101,19 +107,43 @@ class GithubChangelog(object):
         # Initialize the GitHub API object.
         self.api = Github(user=user, token=token, repo=repo)
 
-    def scan_pulls(self, start, stop=None):
+    def scan_pulls(self, start=None, stop=None, after=None):
         """Scan closed pull requests starting from #start and optionally
         stopping at #stop."""
+
+        # Get all closed pull requests.
+        pulls = self.api.pull_requests.list(state="closed").all()
+        pulls.reverse()
+
+        # If a start ID wasn't provided, but after was, look up the first
+        # pull request that was merged AFTER the given --after option was
+        # merged.
+        min_closed_date = None
+        if start is None and after is not None:
+            # Get the pull request from the --after option.
+            pull = self.api.pull_requests.get(after)
+            if not pull:
+                six.print_("Could not find the --after pull request #{}".format(
+                    after
+                ))
+                sys.exit(1)
+
+            min_closed_date = pull.closed_at
+
         six.print_("-- Scanning pull requests... --")
 
         changes = list()
 
-        pulls = self.api.pull_requests.list(state="closed").all()
         for pull in pulls:
             # Skip pull requests outside our requested range.
             if stop and pull.number > stop:
                 continue
-            if pull.number <= start:
+            if start is not None and pull.number <= start:
+                continue
+
+            # If we have a minimum closed date, this PR must've been closed
+            # after that date.
+            if min_closed_date and pull.closed_at < min_closed_date:
                 continue
 
             # Add the pull request title to our change log.
@@ -191,6 +221,15 @@ if __name__ == "__main__":
     parser.add_argument("--repo", "-r",
         help="Repository to run the changelog for. Can either be a single " \
             + "name, or in user/name format.",
+    )
+    parser.add_argument("--after", "-a",
+        help="Include all pull requests that were merged *after* the date " \
+            + "that this one was merged on. This is the simplest option to " \
+            + "use; just set `--after` to be the pull request ID of your " \
+            + "latest deployment pull request. All PR's that were merged " \
+            + "*after* that one was merged will be included (you can use " \
+            + "this instead of --start/--stop)",
+        type=int,
     )
     parser.add_argument("--start", "-s",
         help="Issue number for the pull request you want to start from. " \

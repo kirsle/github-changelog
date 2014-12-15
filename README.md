@@ -23,10 +23,10 @@ text output listing the change log, in a format similar to this:
 ```text
 Changes:
 
-* #21 - Fix an internal server error - @alice
+* #19 - Some other bug fixes - @alice
 * #20 - Add a new feature - @bob
   * [Bugzilla #1234](https://bugzilla.example.com/bug/1234)
-* #19 - Some other bug fixes - @alice
+* #21 - Fix an internal server error - @alice
 ```
 
 This script scans through all the closed pull requests in your repo and outputs
@@ -54,8 +54,6 @@ $ cd github-changelog
 $ pip install -r requirements.txt
 ```
 
-# Quick Start
-
 First you'll need to create a Personal Access Token on GitHub
 (<https://github.com/settings/applications>), as this app will require it for
 getting access to your repositories via the GitHub API. The default permissions
@@ -71,16 +69,22 @@ It's recommended that you run it with `--init` first and enter *your* GitHub
 username and access token. You can always override the `--user` option if you
 need to query an organization's GitHub repo that you have access to.
 
+# Quick Start
+
 Now, to scan a repository's pull requests and generate a change log:
 
 ```bash
-$ ./gitchangelog.py [--user ORG_NAME] --repo <repo name> --start <issue ID> \
-  [--stop <issue ID>]
+$ ./gitchangelog.py [--user ORG_NAME] --repo <repo name> --after <issue ID>
 ```
 
 The repo name and start ID are required. The script will scan all of the repo's
-**closed** pull requests, starting with the one *after* the `--start` option,
-and generate a list of changes.
+**closed** pull requests, starting with the one that was closed *after* the
+date that the `--after` option was closed on.
+
+So, if you regularly merge from `develop` into `master`, and the *last* time you
+did that, the pull request issue number was `#12`... you would provide the
+option `--after 12` and all pull requests that were *closed* on a later date
+than `#12` will be included.
 
 You can provide the `--user` option to override the username used for the repo;
 for example, if you have access to an organization and want to get a change log
@@ -91,7 +95,8 @@ work for accessing organization repos that you have permissions for.
 
 ```
 usage: gitchangelog [-h] [--debug] [--init] [--user USER] [--token TOKEN]
-                    [--repo REPO] [--start START] [--stop STOP]
+                    [--repo REPO] [--after AFTER] [--start START]
+                    [--stop STOP]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -112,6 +117,14 @@ optional arguments:
                         for your system.
   --repo REPO, -r REPO  Repository to run the changelog for. Can either be a
                         single name, or in user/name format.
+  --after AFTER, -a AFTER
+                        Include all pull requests that were merged *after* the
+                        date that this one was merged on. This is the simplest
+                        option to use; just set `--after` to be the pull
+                        request ID of your latest deployment pull request. All
+                        PR's that were merged *after* that one was merged will
+                        be included (you can use this instead of
+                        --start/--stop)
   --start START, -s START
                         Issue number for the pull request you want to start
                         from. For example, if you occasionally do a merge from
