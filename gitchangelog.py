@@ -2,7 +2,7 @@
 
 """gitchangelog: Generate a change log based on closed pull requests."""
 
-__version__ = '1.01'
+__version__ = '1.02'
 
 import six
 from six.moves import input
@@ -143,7 +143,7 @@ class GithubChangelog(object):
 
             # If we have a minimum closed date, this PR must've been closed
             # after that date.
-            if min_closed_date and pull.closed_at < min_closed_date:
+            if min_closed_date and pull.closed_at <= min_closed_date:
                 continue
 
             # Add the pull request title to our change log.
@@ -154,10 +154,14 @@ class GithubChangelog(object):
 
             # Get the issue for it to look up the comments (cuz comments on
             # the pull object don't work???)
-            comments = self.api.issues.comments.list(pull.number).all()
+            comments = [ x.body for x in self.api.issues.comments.list(pull.number).all() ]
+            if not "Changes:\n" in pull.body:
+                # Try not to redundantly paste links from previous merges.
+                comments.insert(0, pull.body)
+
             for comment in comments:
                 # Scan it for links.
-                for match in re.findall(self.MARKDOWN_LINK, comment.body):
+                for match in re.findall(self.MARKDOWN_LINK, comment):
                     label, url = match
                     changes.append("  * [{}]({})".format(label, url))
                     self.say("Found link in comment: {}".format(changes[-1]))
