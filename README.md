@@ -92,11 +92,10 @@ optional arguments:
                         the org username.
   --token TOKEN, -t TOKEN
                         OAuth personal access token for authentication. If not
-                        provided, you will be promtped for it and the setting
+                        provided, you will be prompted for it and the setting
                         will be saved in ~/.config/gitchangelog or equivalent
                         for your system.
-  --repo REPO, -r REPO  Repository to run the changelog for. Can either be a
-                        single name, or in user/name format.
+  --repo REPO, -r REPO  Repository to run the changelog for.
   --after AFTER, -a AFTER
                         Include all pull requests that were merged *after* the
                         date that this one was merged on. This is the simplest

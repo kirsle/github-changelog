@@ -219,12 +219,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("--token", "-t",
         help="OAuth personal access token for authentication. If not " \
-            + "provided, you will be promtped for it and the setting will be " \
+            + "provided, you will be prompted for it and the setting will be " \
             + "saved in ~/.config/gitchangelog or equivalent for your system.",
     )
     parser.add_argument("--repo", "-r",
-        help="Repository to run the changelog for. Can either be a single " \
-            + "name, or in user/name format.",
+        help="Repository to run the changelog for.",
     )
     parser.add_argument("--after", "-a",
         help="Include all pull requests that were merged *after* the date " \
