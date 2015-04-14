@@ -1,24 +1,17 @@
-# gitchangelog
+# GitHub Changelog Generator
 
-This is a changelog generator for GitHub pull requests.
+This is a changelog generator for GitHub pull requests. It works well with the
+[git-flow](http://nvie.com/posts/a-successful-git-branching-model/) workflow
+where you have a `master` branch for production and a `develop` branch for
+development (it also works if you have a `staging` branch in there too).
 
-# Intended Use Case
-
-You have a GitHub repository, maybe as part of an organization, and you have a
-separate `master` (production-ready) and `develop` branch. Maybe a `staging`
-branch too, but that's not important.
-
-Your development cycle is that developers create feature branches for specific
-bug tickets or new features, and merge them from their feature branch into the
-`develop` branch.
-
-At some point down the road, you merge `develop` into `master` to do your final
-deployment. And you want that pull request to include a simple change log that
-documents all of the pull requests that had gone into `develop` ever since the
-*last* time you deployed into the `master` branch.
-
-This script will enable you to do that. It will generate Markdown-formatted
-text output listing the change log, in a format similar to this:
+This script can generate a pretty changelog for your "develop to production"
+pull request which sums up *all* of the other pull requests that were merged
+since your *last* production merge. Additionally, it scans all of the comments
+in each pull request to extract links, so if you use an external issue tracking
+system and you link to your ticket numbers (either in the pull request's message
+or in a comment), it will be included in the generated changelog under that
+pull request. Example:
 
 ```text
 Changes:
@@ -27,49 +20,30 @@ Changes:
 * #20 - Add a new feature - @bob
   * [Bugzilla #1234](https://bugzilla.example.com/bug/1234)
 * #21 - Fix an internal server error - @alice
+  * [Bugzilla #1238](https://bugzilla.example.com/bug/1238)
 ```
 
-This script scans through all the closed pull requests in your repo and outputs
-a list of changes *since* a given pull request issue number. So for example,
-if your issue `#10` was your last `develop -> master` push, you'd start at
-issue 10 and it would only scan through issues 11 and newer. You can also
-specify an issue number to *stop* at.
+GitHub will automatically link the issue numbers and author usernames, making it
+easy to review what changes went into each pull request.
 
-It will also scan comments on a pull request and pull out any hyperlinks found
-therein. So, if you use an external bug tracker like FogBugz or Bugzilla and
-you link your GitHub issues to it in comments, this will pull those links out
-and include them in the generated change log.
+# Quick Start
 
-# Setup
-
-It's recommended to make a virtualenv. This project depends on the following
-modules available for installation via PyPI:
-
-* pygithub3
-* six
+It's recommended to make a virtualenv. See `requirements.txt` for a list of
+PyPI dependencies if you want to install them globally using your package
+manager.
 
 ```bash
 $ git clone https://github.com/kirsle/github-changelog
 $ cd github-changelog
 $ pip install -r requirements.txt
+$ ./gitchangelog.py --init
 ```
 
-First you'll need to create a Personal Access Token on GitHub
-(<https://github.com/settings/applications>), as this app will require it for
-getting access to your repositories via the GitHub API. The default permissions
-will do; it really only needs access to repositories.
-
-Run the command `./gitchangelog.py --init` to initialize the settings with your
-username and token (this step is optional if you don't want these saved to
-disk, and will always use `--user` and `--token` command line options). The
-`--init` option will simply save these settings to disk and exit. If you want
-to change the settings in the future, run it with the `--init` option again.
-
-It's recommended that you run it with `--init` first and enter *your* GitHub
-username and access token. You can always override the `--user` option if you
-need to query an organization's GitHub repo that you have access to.
-
-# Quick Start
+The init command will guide you through setting up GitHub access credentials.
+You can use your GitHub username, or an organization name if you want it to
+default to that instead (you can always override the username at run-time with
+the `--user` option). The credentials are stored at `~/.config/gitchangelog`
+and you can reconfigure them by running with the `--init` option again.
 
 Now, to scan a repository's pull requests and generate a change log:
 
@@ -77,19 +51,25 @@ Now, to scan a repository's pull requests and generate a change log:
 $ ./gitchangelog.py [--user ORG_NAME] --repo <repo name> --after <issue ID>
 ```
 
-The repo name and start ID are required. The script will scan all of the repo's
+The repo name and issue ID are required. The script will scan all of the repo's
 **closed** pull requests, starting with the one that was closed *after* the
-date that the `--after` option was closed on.
+date that the `--after` issue was closed on.
 
 So, if you regularly merge from `develop` into `master`, and the *last* time you
-did that, the pull request issue number was `#12`... you would provide the
-option `--after 12` and all pull requests that were *closed* on a later date
-than `#12` will be included.
+did that, the pull request issue number was #12, you would provide the option
+`--after 12` and all pull requests that were *closed* on a later date than #12
+will be included.
 
 You can provide the `--user` option to override the username used for the repo;
 for example, if you have access to an organization and want to get a change log
 of one of *their* repos, instead of one of your own. Your access token will
 work for accessing organization repos that you have permissions for.
+
+Shortcut options `-u`, `-r`, and `-a` may be used too:
+
+```bash
+$ ./gitchangelog.py [-u ORG_NAME] -r <repo name> -a <issue ID>
+```
 
 # Help
 
