@@ -1,5 +1,8 @@
 # Revision history for github-changelog
 
+* `1.03`  May  4, 2015
+    * Scan for HTML `<a>` style links in addition to Markdown style.
+
 * `1.02`  Dec 17, 2014
     * Fix the date comparison including the given --after issue in the results.
     * Try to reduce redundant changelogs from other merge commits.

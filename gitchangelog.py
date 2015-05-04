@@ -2,7 +2,7 @@
 
 """gitchangelog: Generate a change log based on closed pull requests."""
 
-__version__ = '1.02'
+__version__ = '1.03'
 
 import six
 from six.moves import input
@@ -16,7 +16,8 @@ import re
 from pygithub3 import Github
 
 class GithubChangelog(object):
-    MARKDOWN_LINK = re.compile(r'\[(.+?)\]\((.+?)\)')
+    MARKDOWN_LINK = re.compile(r'\[(?P<label>.+?)\]\((?P<url>.+?)\)')
+    HTML_LINK = re.compile(r'<a.*href=[\'"](?P<url>.+?)[\'"].*>(?P<label>.+?)</a>')
 
     def __init__(self, debug=False):
         self.debug = debug
@@ -159,14 +160,29 @@ class GithubChangelog(object):
                 # Try not to redundantly paste links from previous merges.
                 comments.insert(0, pull.body)
 
+            # Scan all comments for unique links.
+            urls = set()
             for comment in comments:
                 # Scan it for links.
-                for match in re.findall(self.MARKDOWN_LINK, comment):
-                    label, url = match
+                for link in self.find_links(comment):
+                    label, url = link
+                    if url in urls:
+                        continue
+
                     changes.append("  * [{}]({})".format(label, url))
                     self.say("Found link in comment: {}".format(changes[-1]))
+                    urls.add(url)
 
         return changes
+
+    def find_links(self, comment):
+        """Search a comment for hyperlinks."""
+        links = list()
+        for regex in [self.MARKDOWN_LINK, self.HTML_LINK]:
+            matches = [m.groupdict() for m in regex.finditer(comment)]
+            for match in matches:
+                links.append([match["label"], match["url"]])
+        return links
 
     def save_settings(self, user, token):
         """Save settings to disk."""
