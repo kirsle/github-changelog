@@ -2,7 +2,7 @@
 
 """gitchangelog: Generate a change log based on closed pull requests."""
 
-__version__ = '1.03'
+__version__ = '1.04'
 
 import six
 from six.moves import input
@@ -145,6 +145,13 @@ class GithubChangelog(object):
             # If we have a minimum closed date, this PR must've been closed
             # after that date.
             if min_closed_date and pull.closed_at <= min_closed_date:
+                continue
+
+            # If the PR was closed instead of merged, skip it.
+            if not self.api.pull_requests.is_merged(pull.number):
+                self.say("Skip closed (not merged) pull request {}".format(
+                    pull.number
+                ))
                 continue
 
             # Add the pull request title to our change log.

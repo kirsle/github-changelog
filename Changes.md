@@ -1,5 +1,8 @@
 # Revision history for github-changelog
 
+* `1.04`  Jun  9, 2015
+    * Skip pull requests that were closed without being merged.
+
 * `1.03`  May  4, 2015
     * Scan for HTML `<a>` style links in addition to Markdown style.
 
