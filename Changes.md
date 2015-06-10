@@ -1,5 +1,9 @@
 # Revision history for github-changelog
 
+* `1.05`  Jun 10, 2015
+    * Add `--gitflow` option which prevents enumerating links from pull requests
+      destined for the `master` or `staging` branches (also `stage`).
+
 * `1.04`  Jun  9, 2015
     * Skip pull requests that were closed without being merged.
 

@@ -71,12 +71,27 @@ Shortcut options `-u`, `-r`, and `-a` may be used too:
 $ ./gitchangelog.py [-u ORG_NAME] -r <repo name> -a <issue ID>
 ```
 
+## Git Flow
+
+If your project uses the git-flow workflow, and you have branches named like
+`master`, `staging` and `develop`, this script can suppress hyperlink
+enumeration in pull requests destined for the `master` and `staging` branches.
+
+So, if you regularly run this script to generate changelogs for master and
+staging deployments, inevitably future runs of this script will also include
+those pull requests and enumerate *their* links, which results in a bunch of
+redundant links filling up your changelog.
+
+Use the `--gitflow` option to the script to avoid this. Any pull requests
+destined for the `master` or `staging` branch will NOT include hyperlinks found
+within those pull requests. This keeps your changelog nice and tidy.
+
 # Help
 
 ```
 usage: gitchangelog [-h] [--debug] [--init] [--user USER] [--token TOKEN]
                     [--repo REPO] [--after AFTER] [--start START]
-                    [--stop STOP]
+                    [--stop STOP] [--gitflow]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -115,6 +130,12 @@ optional arguments:
                         check all pull requests *after* the `--start` option.
                         Provide `--stop` to stop at a different number
                         instead.
+  --gitflow, -g         Use a `git flow` style for branch management. With
+                        this enabled, pull requests that go from develop to
+                        staging, or staging to master, do not have their
+                        comment hyperlinks enumerated (as their comments will
+                        tend to be other outputs from github-changelog and end
+                        up in a lot of redundant links).
 ```
 
 # License
@@ -122,7 +143,7 @@ optional arguments:
 ```
 The MIT License (MIT)
 
-Copyright (c) 2014 Noah Petherbridge
+Copyright (c) 2015 Noah Petherbridge
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -2,7 +2,7 @@
 
 """gitchangelog: Generate a change log based on closed pull requests."""
 
-__version__ = '1.04'
+__version__ = '1.05'
 
 import six
 from six.moves import input
@@ -18,6 +18,7 @@ from pygithub3 import Github
 class GithubChangelog(object):
     MARKDOWN_LINK = re.compile(r'\[(?P<label>.+?)\]\((?P<url>.+?)\)')
     HTML_LINK = re.compile(r'<a.*href=[\'"](?P<url>.+?)[\'"].*>(?P<label>.+?)</a>')
+    GITFLOW_BRANCH = ["master", "staging", "stage"]
 
     def __init__(self, debug=False):
         self.debug = debug
@@ -167,6 +168,14 @@ class GithubChangelog(object):
                 # Try not to redundantly paste links from previous merges.
                 comments.insert(0, pull.body)
 
+            # Are we using the gitflow workflow? If so, we do not enumerate
+            # links in pull requests going from develop -> staging -> master,
+            # as these PR's will tend to have other outputs from this script
+            # in their comments. This lessens huge lists of redundant links
+            # showing up in your changelogs under the "develop to staging" PR's.
+            if args.gitflow and pull.base["ref"] in self.GITFLOW_BRANCH:
+                continue
+
             # Scan all comments for unique links.
             urls = set()
             for comment in comments:
@@ -270,6 +279,14 @@ if __name__ == "__main__":
             + "all pull requests *after* the `--start` option. Provide " \
             + "`--stop` to stop at a different number instead.",
         type=int,
+    )
+    parser.add_argument("--gitflow", "-g",
+        help="Use a `git flow` style for branch management. With this " \
+            "enabled, pull requests that go from develop to staging, or " \
+            "staging to master, do not have their comment hyperlinks " \
+            "enumerated (as their comments will tend to be other outputs " \
+            "from github-changelog and end up in a lot of redundant links).",
+        action="store_true",
     )
     args = parser.parse_args()
 
