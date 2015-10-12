@@ -2,7 +2,7 @@
 
 """gitchangelog: Generate a change log based on closed pull requests."""
 
-__version__ = '1.05'
+__version__ = '1.6.0'
 
 import six
 from six.moves import input
@@ -53,6 +53,7 @@ class GithubChangelog(object):
             start=args.start,
             stop=args.stop,
             after=args.after,
+            exclude=args.exclude,
         )
 
         # Pretty print the result!
@@ -109,7 +110,7 @@ class GithubChangelog(object):
         # Initialize the GitHub API object.
         self.api = Github(user=user, token=token, repo=repo)
 
-    def scan_pulls(self, start=None, stop=None, after=None):
+    def scan_pulls(self, start=None, stop=None, after=None, exclude=None):
         """Scan closed pull requests starting from #start and optionally
         stopping at #stop."""
 
@@ -153,6 +154,10 @@ class GithubChangelog(object):
                 self.say("Skip closed (not merged) pull request {}".format(
                     pull.number
                 ))
+                continue
+
+            # If we're excluding merges into this branch, skip it.
+            if type(exclude) is list and pull.base["ref"] in exclude:
                 continue
 
             # Add the pull request title to our change log.
@@ -287,6 +292,16 @@ if __name__ == "__main__":
             "enumerated (as their comments will tend to be other outputs " \
             "from github-changelog and end up in a lot of redundant links).",
         action="store_true",
+    )
+    parser.add_argument("--exclude", "-X",
+        help="Exclude pull requests that merge into this branch. For example " \
+            "if you have a long-lived feature branch that isn't being " \
+            "deployed in your main release, you can use the --exclude option " \
+            "and name that branch. Its pull requests don't get included in " \
+            "the change log output in this case. This option can be " \
+            "specified multiple times.",
+        action="append",
+        type=six.text_type,
     )
     args = parser.parse_args()
 

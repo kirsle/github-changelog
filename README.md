@@ -86,12 +86,27 @@ Use the `--gitflow` option to the script to avoid this. Any pull requests
 destined for the `master` or `staging` branch will NOT include hyperlinks found
 within those pull requests. This keeps your changelog nice and tidy.
 
+## Excluding Branches
+
+If you have a long-lived feature branch that isn't going to be deployed for
+several versions of your app, you can exclude pull requests destined for that
+feature branch from being included in the changelog.
+
+Example:
+
+```bash
+$ ./gitchangelog.py -r my-repo -a 123 -X feature/something
+```
+
+The `-X` or `--exclude` option can be used multiple times to exclude multiple
+branches.
+
 # Help
 
 ```
 usage: gitchangelog [-h] [--debug] [--init] [--user USER] [--token TOKEN]
                     [--repo REPO] [--after AFTER] [--start START]
-                    [--stop STOP] [--gitflow]
+                    [--stop STOP] [--gitflow] [--exclude EXCLUDE]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -136,6 +151,14 @@ optional arguments:
                         comment hyperlinks enumerated (as their comments will
                         tend to be other outputs from github-changelog and end
                         up in a lot of redundant links).
+  --exclude EXCLUDE, -X EXCLUDE
+                        Exclude pull requests that merge into this branch. For
+                        example if you have a long-lived feature branch that
+                        isn't being deployed in your main release, you can use
+                        the --exclude option and name that branch. Its pull
+                        requests don't get included in the change log output
+                        in this case. This option can be specified multiple
+                        times.
 ```
 
 # License

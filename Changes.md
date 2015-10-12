@@ -1,5 +1,10 @@
 # Revision history for github-changelog
 
+* `1.6.0`  Oct 12, 2015
+    * Add `--exclude` option which enables skipping a branch from having its
+      pull requests included in the changelog. For example a long-lived feature
+      branch that isn't being deployed to production.
+
 * `1.05`  Jun 10, 2015
     * Add `--gitflow` option which prevents enumerating links from pull requests
       destined for the `master` or `staging` branches (also `stage`).
