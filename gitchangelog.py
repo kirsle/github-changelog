@@ -2,6 +2,8 @@
 
 """gitchangelog: Generate a change log based on closed pull requests."""
 
+from __future__ import unicode_literals
+
 __version__ = '1.6.0'
 
 import six
@@ -162,7 +164,7 @@ class GithubChangelog(object):
 
             # Add the pull request title to our change log.
             changes.append("* #{} - {} - @{}".format(
-                pull.number, pull.title.encode('ascii', 'ignore'), pull.user.get("login")
+                pull.number, pull.title, pull.user.get("login")
             ))
             self.say("Found closed pull request: {}".format(changes[-1]))
 
