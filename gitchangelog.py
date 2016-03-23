@@ -2,6 +2,8 @@
 
 """gitchangelog: Generate a change log based on closed pull requests."""
 
+from __future__ import unicode_literals
+
 __version__ = '1.6.0'
 
 import six
