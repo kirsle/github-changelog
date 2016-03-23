@@ -162,7 +162,7 @@ class GithubChangelog(object):
 
             # Add the pull request title to our change log.
             changes.append("* #{} - {} - @{}".format(
-                pull.number, pull.title, pull.user.get("login")
+                pull.number, pull.title.encode('ascii', 'ignore'), pull.user.get("login")
             ))
             self.say("Found closed pull request: {}".format(changes[-1]))
 
